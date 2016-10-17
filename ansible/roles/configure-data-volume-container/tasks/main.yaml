@@ -1,0 +1,62 @@
+---
+
+- name: Create data container directories
+  file: path="{{ data_container_path }}/{{ item }}" state=directory
+  with_items:
+    - secrets
+    - job-builder
+
+- name: Get jenkins secrets from s3
+  s3:
+    aws_access_key: "{{ aws_key }}"
+    aws_secret_key: "{{ aws_secret }}"
+    region: "{{ aws_region }}"
+    overwrite: True
+    bucket: "{{ config_bucket }}"
+    object: secrets/{{ kraken_ci_hostname }}/{{ item }}
+    dest: "{{ data_container_path }}/secrets/{{ item }}"
+    mode: get
+  with_items:
+    - hudson.console.AnnotatedLargeText.consoleAnnotator 
+    - hudson.model.Job.serverCookie
+    - hudson.util.Secret
+    - jenkins.security.ApiTokenProperty.seed
+    - master.key
+    - org.jenkinsci.main.modules.instance_identity.InstanceIdentity.KEY
+
+- name: Get jenkins secret configs from s3
+  s3:
+    aws_access_key: "{{ aws_key }}"
+    aws_secret_key: "{{ aws_secret }}"
+    region: "{{ aws_region }}"
+    overwrite: True
+    bucket: "{{ config_bucket }}"
+    object: secrets/{{ kraken_ci_hostname }}/config/{{ item }}
+    dest: "{{ data_container_path }}/config/{{ item }}"
+    mode: get
+  with_items:
+    - credentials.xml
+    - com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsConfig.xml
+
+- name: Render jenkins configs
+  template: src=data_volume/config/{{ item }}.jinja2 dest={{ data_container_path }}/config/{{ item }}
+  with_items:
+    - config.xml
+    - jenkins.model.JenkinsLocationConfiguration.xml
+    - jenkins.plugins.slack.SlackNotifier.xml
+    - org.jenkinsci.plugins.ghprb.GhprbTrigger.xml
+    - github-plugin-configuration.xml
+
+- name: Render jenkins-job-builder configs
+  template: src=data_volume/job-builder/{{ item }}.jinja2 dest={{ data_container_path }}/job-builder/{{ item }}
+  with_items:
+    - jenkins_jobs.ini
+    - slack-publisher.yaml
+
+#- name: Clone jenkins-jobs-builder jobs repo 
+#  git: >
+#    repo={{ kraken_ci_jobs_repo }}
+#    dest={{ data_container_path }}/job-builder/jobs
+#    version={{ kraken_ci_jobs_repo_branch }}
+#    accept_hostkey=yes
+#    force=yes

@@ -1,0 +1,5 @@
+---
+
+- name: Render .s3cfg to mount into jenkins-backup container
+  template: src=s3cfg.jinja2
+            dest="{{ data_container_path }}/.s3cfg"

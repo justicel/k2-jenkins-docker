@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  roles:
+    - role: ci-properties
+    
+    - role: configure-data-volume-container
+      kraken_ci_name: testlet2
+      kraken_ci_hostname: "testlet2.kubeme.io"
+      data_container_path: ../containers/jenkins
+      
+    - role: configure-jenkins-master-container
+      kraken_ci_hostname: "testlet2.kubeme.io"
+      data_container_path: ../containers/jenkins
+      
+    - role: build-container-image
+      data_container_path: ../containers/jenkins
+      data_container_tag: quay.io/samsung_cnct/k2-ci-jenkins

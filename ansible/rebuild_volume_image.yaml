@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  roles:
+    - role: ci-properties
+    - role: configure-data-volume-image
+      kraken_ci_name: testlet2
+      kraken_ci_hostname: "testlet2.kubeme.io"
+      data_container_path: ../containers/datavolume
+    - role: build-container-image
+      data_container_path: ../containers/datavolume
+      data_container_tag: quay.io/samsung_cnct/k2-ci-data_volume
