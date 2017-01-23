@@ -1,5 +1,0 @@
-- name: Build jenkins data container if we need to
-  shell: docker build -t {{ data_container_tag }} {{ data_container_path }}
-   
-- name: Push container to repo
-  shell: docker push {{ data_container_tag }}
